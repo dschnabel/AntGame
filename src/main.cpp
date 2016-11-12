@@ -30,6 +30,7 @@ public:
     AntServer() {
         m_server.init_asio();
 
+        m_server.set_socket_init_handler(bind(&AntServer::on_socket_init,this,_1,_2));
         m_server.set_open_handler(bind(&AntServer::on_open,this,_1));
         m_server.set_close_handler(bind(&AntServer::on_close,this,_1));
         m_server.set_message_handler(bind(&AntServer::on_message,this,_1,_2));
@@ -43,6 +44,11 @@ public:
     ~AntServer() {
         m_server.stop_listening();
         m_server.stop();
+    }
+
+    void on_socket_init(websocketpp::connection_hdl, boost::asio::ip::tcp::socket & s) {
+        boost::asio::ip::tcp::no_delay option(true);
+        s.set_option(option);
     }
 
     void on_open(connection_hdl hdl) {
