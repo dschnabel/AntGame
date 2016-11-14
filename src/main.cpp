@@ -82,6 +82,7 @@ public:
         m_server.set_access_channels(websocketpp::log::alevel::none);
 
         message_index = 0;
+        broadcast = (broadcast_t){0, 0};
     }
 
     ~AntServer() {
