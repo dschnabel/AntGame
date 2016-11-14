@@ -99,11 +99,25 @@ public:
         boost::upgrade_lock<boost::shared_mutex> lock(connection_mutex);
         boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
 
-        if (m_connections.empty()) {
-            players[hdl] = (player_t){Position::L_QUEEN};
-        } else {
-            players[hdl] = (player_t){Position::R_QUEEN};
+        for (int p = Position::L_QUEEN; p <= Position::R_2; p++) {
+            Position position = static_cast<Position>(p);
+            bool taken = false;
+
+            for(players_iterator iterator = players.begin(); iterator != players.end(); iterator++) {
+                if (iterator->second.position == position) {
+                    taken = true;
+                    break;
+                }
+            }
+
+            if (!taken) {
+                players[hdl] = (player_t){position};
+                break;
+            }
         }
+
+        m_server.send(hdl, to_string(players[hdl].position), websocketpp::frame::opcode::text);
+
         m_connections.insert(hdl);
     }
 
@@ -111,6 +125,7 @@ public:
         boost::upgrade_lock<boost::shared_mutex> lock(connection_mutex);
         boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
 
+        players.erase(hdl);
         m_connections.erase(hdl);
     }
 
@@ -214,8 +229,8 @@ public:
     //********************** /dispatcher thread **********************
 private:
     typedef set<connection_hdl,owner_less<connection_hdl>> con_list;
+    typedef map <connection_hdl, player_t, owner_less<connection_hdl>>::iterator players_iterator;
     typedef map <player_t, boost::circular_buffer<status_t>>::iterator data_iterator;
-//    typedef tuple<connection_hdl, uint64_t, string> input_message;
 
     server m_server;
     con_list m_connections;
