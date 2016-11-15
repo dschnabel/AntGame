@@ -246,7 +246,6 @@ private:
 };
 
 // Notes:
-// - add -flto to compiler and linker command for optimization (don't use for debug build)
 // - http://www.cloudping.info/
 // - struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts);
 // - top -p $(pgrep AntGame) -H
